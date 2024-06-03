@@ -3,7 +3,7 @@ import datetime
 import gdown
 import pandas
 
-def determine_round_number(footy_draw)
+def determine_round_number(footy_draw):
     '''Takes a dataframe containing the footy draw as an argument,
     and returns the round number of the next game after the current date
     '''
