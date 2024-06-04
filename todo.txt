@@ -1,0 +1,7 @@
+Email functionality
+Excel formatting
+OneDrive Dowload/Upload
+Google Download
+Arg parse
+Config file
+Creds file (in gitignore)
