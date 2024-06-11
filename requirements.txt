@@ -1,4 +1,6 @@
 argparse
 datetime
-gdown
+openpyxl
 pandas
+requests
+tomli

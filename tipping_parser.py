@@ -1,7 +1,7 @@
 import argparse
 import datetime
-import gdown
-import pandas
+import pandas as pd
+import tomli
 
 def download_onedrive_file(local_file_location, onedrive_file_location):
     '''Downloads a specified onedrive file to a specified local path
@@ -30,7 +30,7 @@ def enrich_tipping_sheet(round_sheet, players_sheet):
     # Sort by name
     round_sheet = round_sheet.sort_values(by='Name')
     
-    # Add Excel formula columns]
+    # Add Excel formula columns
     player = 1
     for each_tips_entry in round_sheet.iterrows():
         row_number = player + 1
@@ -44,6 +44,21 @@ def enrich_tipping_sheet(round_sheet, players_sheet):
 
     # Return the enriched round sheet
     return round_sheet
+
+def export_spreadsheet(filename, spreadsheet_dict):
+    ''' Takes a dict consisting of multiple dataframes.
+    Exports each data frame to a sheet in a spreadsheet file
+    '''
+    # Create a writer object to write to the spreadsheet
+    writer = pd.ExcelWriter(filename ,engine='xlsxwriter')
+    workbook=writer.book
+
+    # Iterate through the dictionary, exporting each dataframe to a sheet
+    for sheet_name, df in spreadsheet_dict.items():
+        workbook=workbook.add_worksheet(sheet_name)
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+    
+
 
 def get_round_number(footy_draw):
     '''Takes a dataframe containing the footy draw as an argument,
@@ -93,16 +108,23 @@ def get_tips_sheet_url(round_number, weekly_forms):
     # Return the link to the sheet
     return sheet_url
 
-def ingest_google_sheet_to_dataframe(google_sheet_url):
-    ''' Ingest a google speadsheet at a given url into a dataframe, and
+def ingest_spreadsheet_to_dataframe(spreadsheet_location):
+    ''' Ingest a local speadsheet at a given location into a dataframe, and
     return the dataframe
     '''
+    # Get a list of all sheets in the given spreadsheet location
+    spreadsheet_info = pd.ExcelFile(spreadsheet_location)
 
-def ingest_onedrive_sheet_to_dataframe(onedrive_url):
-    '''
-    Ingest a onedrive spreadsheet at a given url into a dataframe, and
-    return the dataframe
-    '''
+    # Create a dictionary to store the dataframes
+    spreadsheet_dict = {}
+
+    # Iterate through the sheets in the spreadsheet
+    for sheet in spreadsheet_info.sheet_names:
+        # Read the sheet into a dataframe
+        spreadsheet_dict[sheet] = pd.read_excel(spreadsheet_location, sheet_name=sheet)
+
+    # Return the dictionary of dataframes
+    return spreadsheet_dict
 
 def process_tipping_entries(round_sheet, tips_sheet):
     ''' Take a given tipping entry and add it to the tipping sheet
@@ -136,8 +158,13 @@ def process_tipping_entries(round_sheet, tips_sheet):
     return tips_sheet
 
 def main():
-    # Download master spreadsheet
-    tipping_spreadsheet = ingest_onedrive_sheet_to_dataframe()
+    # Ingest config.toml into a dictionary
+    with open("conf/config.toml", "rb") as config_file:
+        config = tomli.load(config_file)
+
+    # Ingest the tipping spreadsheet into a dataframe
+    tipping_spreadsheet = ingest_spreadsheet_to_dataframe(config['local']['tipping_sheet_location'])
+    print("Ingested tipping spreadsheet")
 
     # Determine current round
     round_number = get_round_number(tipping_spreadsheet['Footy Draw'])
@@ -163,6 +190,9 @@ def main():
 
     # Email tipping sheet
 
+    # Export tipping sheet as spreadsheet
+    export_spreadsheet(spreadsheet_file, tipping_spreadsheet)
+
     ## Generic functions
     # Email results
 
@@ -171,3 +201,5 @@ def main():
     # Apply conditional formatting to tipping sheet column
 
     # Upload spreadsheet
+
+main()

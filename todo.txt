@@ -1,7 +1,17 @@
 Email functionality
-Excel formatting
-OneDrive Dowload/Upload
-Google Download
+    create email class
+    handles connection, composing and sending
+    Pulls credentials from creds file
+    Pulls address/s from config file
+
+Tipping functionality
+    Create tip_processing class
+    Hands enrichment, tips insertion and spreadsheet formatting
+
+File procurement class
+    OneDrive Download/Upload
+    Google Download
+    
 Arg parse
 Config file
 Creds file (in gitignore)

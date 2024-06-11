@@ -1,0 +1,3 @@
+# Exclude the credentials file
+conf/config.toml
+conf/credentials.toml
